@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+-   Initial project template structure.
+-   Configuration files: `.editorconfig`, `.gitattributes`, `.gitignore`, `.pre-commit.yaml`, `pyproject.toml`.
+-   Example `README.md`, `LICENSE`, and `CONTRIBUTING.md`.
+-   Source, test, docs, and scripts directories.
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## Containerization
+
+This project includes a Dockerfile for running the Hello World app in a container. See the README for usage instructions.
+
+## [0.1.0] - 2025-07-12
+
+### Added
+
+-   Project scaffolded and

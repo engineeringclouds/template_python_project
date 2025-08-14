@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+dist/
+build/
+.eggs/
+*.egg-info/
+# .dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+build/
+dist/
+.git/
+.vscode/

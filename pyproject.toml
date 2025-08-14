@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "template_python_project"
+version = "0.1.0"
+description = "A template Python project."
+authors = [
+    { name = "Karl Cooke", email = "your.email@example.com" }
+]
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+# Add your runtime dependencies here, e.g. "requests>=2.0.0"
+dependencies = [
+
+]
+urls = {
+    "Homepage" = "https://github.com/yourusername/template_python_project",
+    "Documentation" = "https://yourusername.github.io/template_python_project/",
+    "Source" = "https://github.com/yourusername/template_python_project",
+    "Tracker" = "https://github.com/yourusername/template_python_project/issues"
+}
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "ruff",
+    "mypy",
+    "pytest",
+    "pytest-cov",
+    "pre-commit"
+]
+
+# Black: Code formatter configuration
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+
+# Ruff: Linter and import sorter configuration
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+select = ["E", "F", "I"]  # E: pycodestyle errors, F: pyflakes, I: isort
+
+# Pytest: Test runner configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests"
+]
+pythonpath = ["src"]
+
+# Mypy: Static type checker configuration
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
+strict_equality = true
+show_error_codes = true
+pretty = true
+
+# Entry points: CLI command configuration (uncomment and edit if needed)
+#[project.scripts]
+#template-python-project = "template_python_project.cli:main"

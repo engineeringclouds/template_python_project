@@ -1,0 +1,35 @@
+# Ensure consistent line endings and text file normalization across platforms
+
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Explicitly declare text files and their line endings
+*.py      text eol=lf
+*.sh      text eol=lf
+*.md      text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.json    text eol=lf
+*.toml    text eol=lf
+*.editorconfig text eol=lf
+*.gitignore    text eol=lf
+*.gitattributes text eol=lf
+
+# Windows-specific files (if any) can be set to CRLF if needed
+*.bat     text eol=crlf
+*.ps1     text eol=crlf
+
+# Treat binary files as binary (no normalization)
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.pdf     binary
+*.zip     binary
+*.gz      binary
+*.tar     binary
+*.bz2     binary
+*.7z      binary
+
+# End of file
