@@ -1,0 +1,96 @@
+name: Container
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Dockerfile'
+      - 'src/**'
+      - 'pyproject.toml'
+      - '.dockerignore'
+
+jobs:
+  # Check if CI workflow was successful (for workflow_run trigger)
+  check-ci-success:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    outputs:
+      ci-success: ${{ steps.check.outputs.success }}
+    steps:
+      - name: Check CI workflow success
+        id: check
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "CI workflow failed, skipping container build"
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [check-ci-success]
+    if: |
+      always() && (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'workflow_run' && needs.check-ci-success.outputs.ci-success == 'true')
+      )
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: template-python-project:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Test Docker image
+        run: |
+          docker run --rm template-python-project:latest
+          
+      - name: Test Docker image with custom command
+        run: |
+          docker run --rm template-python-project:latest python -c "from template_python_project import hello; print(f'Test: {hello()}')"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: [check-ci-success, build]
+    if: |
+      always() && needs.build.result == 'success' && (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'workflow_run' && needs.check-ci-success.outputs.ci-success == 'true')
+      )
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build Docker image for scanning
+        run: docker build -t template-python-project:scan .
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'template-python-project:scan'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'

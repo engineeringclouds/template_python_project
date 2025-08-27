@@ -3,6 +3,10 @@
 Thank you for considering contributing to this project!  
 We welcome contributions of all kinds, including bug reports, feature requests, documentation improvements, and code.
 
+## Code of Conduct
+
+This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior by opening an issue or contacting the project maintainers.
+
 ## How to Contribute
 
 1. **Fork the repository**  
@@ -21,13 +25,24 @@ We welcome contributions of all kinds, including bug reports, feature requests, 
     git checkout -b my-feature-branch
     ```
 
-4. **Install development dependencies**  
-   It is recommended to use a virtual environment:
+4. **Bootstrap your development environment**  
+   Run the appropriate bootstrap script for your operating system:
 
+    - Linux/macOS:
+        ```sh
+        ./scripts/bootstrap.sh
+        ```
+    - Windows (PowerShell):
+        ```powershell
+        .\scripts\bootstrap.ps1
+        ```
+
+   Alternatively, you can set up manually:
     ```sh
     python -m venv .venv
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
     pip install -e ".[dev]"
+    pre-commit install
     ```
 
 5. **Make your changes**  
