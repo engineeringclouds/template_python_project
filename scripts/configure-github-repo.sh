@@ -35,9 +35,9 @@ log_error() {
 check_gh_cli() {
     if ! command -v gh &> /dev/null; then
         log_error "GitHub CLI (gh) is not installed. Please install it first:"
+        echo "  - Installation instructions for all platforms: https://cli.github.com/manual/installation"
         echo "  - macOS: brew install gh"
-        echo "  - Ubuntu: https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
-        echo "  - Windows: https://github.com/cli/cli/releases"
+        # For platform-specific instructions, see the official documentation above.
         exit 1
     fi
     
