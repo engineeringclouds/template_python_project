@@ -10,6 +10,10 @@
 
 A minimal, secure, and modern Python project template with a basic Hello World app, containerization support, and robust development tooling.
 
+## Development Philosophy
+
+This template was collaboratively developed through "vibe coding" - an iterative, conversation-driven approach using AI assistance where the project evolved organically based on real needs and best practices. Rather than following a rigid specification, we built this template through continuous refinement, testing, and improvement in an interactive dialogue, ensuring it provides genuine value for Python developers starting new projects.
+
 ## Features
 
 -   Python 3.13+ compatible
@@ -170,6 +174,7 @@ Push to main → Release Workflow (Semantic Versioning + Template Validation)
     - Cross-platform testing (Ubuntu, Windows, macOS)
 
 2. **Container Workflow** (`container.yml`): Only runs after CI passes
+
     - **Dependency**: Waits for CI workflow to complete successfully
     - Docker image building and testing
     - Container security scanning with Trivy
@@ -188,9 +193,9 @@ This ensures that only validated, tested code gets containerized and released, f
 
 The project uses [semantic versioning](https://semver.org/) with [conventional commits](https://www.conventionalcommits.org/) to manage template releases:
 
-- `feat:` → Minor version bump (0.1.0 → 0.2.0) - New template features
-- `fix:` → Patch version bump (0.1.0 → 0.1.1) - Template fixes  
-- `feat!:` or `BREAKING CHANGE:` → Major version bump (0.1.0 → 1.0.0) - Breaking changes
+-   `feat:` → Minor version bump (0.1.0 → 0.2.0) - New template features
+-   `fix:` → Patch version bump (0.1.0 → 0.1.1) - Template fixes
+-   `feat!:` or `BREAKING CHANGE:` → Major version bump (0.1.0 → 1.0.0) - Breaking changes
 
 Each release validates that the template produces working Python projects and provides clear upgrade paths for existing users.
 
@@ -214,7 +219,9 @@ See [Release Workflow Guide](docs/release-workflow.md) for detailed information.
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! This project embodies a collaborative "vibe coding" philosophy - we believe the best solutions emerge through iterative conversation and real-world testing, whether that's human-to-human or human-to-AI collaboration. Whether you're suggesting improvements, fixing bugs, or adding features, we value the collaborative process of building something useful together.
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 

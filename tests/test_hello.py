@@ -2,6 +2,7 @@
 
 from template_python_project import hello
 
+
 def test_hello():
     """Test that hello returns the expected greeting."""
     assert hello() == "Hello, world!"
