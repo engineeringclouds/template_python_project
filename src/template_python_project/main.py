@@ -2,7 +2,7 @@ def hello() -> str:
     return "Hello, world!"
 
 
-def main():
+def main() -> None:
     print(hello())
 
 

@@ -1,0 +1,251 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI", "Container"]
+    types:
+      - completed
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_level:
+        description: "Force a specific version bump (patch, minor, major, prerelease)"
+        required: false
+        default: "none"
+        type: choice
+        options:
+          - "none"
+          - patch
+          - minor
+          - major
+          - prerelease
+      prerelease:
+        description: "Create a prerelease"
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: "Perform a dry run (no actual release)"
+        required: false
+        default: false
+        type: boolean
+
+# Prevent concurrent releases
+concurrency:
+  group: ${{ github.workflow }}-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+# Default: least privileged permissions across all jobs
+permissions:
+  contents: read
+
+jobs:
+  # Check if both CI and Container workflows were successful for this commit
+  check-workflows-success:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    outputs:
+      workflows-success: ${{ steps.check.outputs.success }}
+    steps:
+      - name: Check workflows success
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Checking workflow: ${{ github.event.workflow_run.name }}"
+          echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Commit SHA: ${{ github.event.workflow_run.head_sha }}"
+
+          # Exit if this workflow failed
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "Workflow ${{ github.event.workflow_run.name }} failed, skipping release"
+            exit 1
+          fi
+
+          # Check if both CI and Container workflows have succeeded for this commit
+          commit_sha="${{ github.event.workflow_run.head_sha }}"
+
+          echo "Checking CI and Container workflow status for commit: $commit_sha"
+
+          # Get workflow runs for this commit
+          ci_status=$(gh api "/repos/${{ github.repository }}/actions/workflows/ci.yml/runs" \
+            --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\" and .conclusion != null) | .conclusion" \
+            | head -n1)
+
+          container_status=$(gh api "/repos/${{ github.repository }}/actions/workflows/container.yml/runs" \
+            --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\" and .conclusion != null) | .conclusion" \
+            | head -n1)
+
+          echo "CI status: $ci_status"
+          echo "Container status: $container_status"
+
+          if [ "$ci_status" = "success" ] && [ "$container_status" = "success" ]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "Both CI and Container workflows succeeded for commit $commit_sha"
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "Not all required workflows have succeeded yet for commit $commit_sha"
+            exit 1
+          fi
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [check-workflows-success]
+    if: |
+      always() && (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'workflow_run' && needs.check-workflows-success.outputs.workflows-success == 'true')
+      )
+
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: read
+
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
+      commit_sha: ${{ steps.release.outputs.commit_sha }}
+      release_notes: ${{ steps.release.outputs.release_notes }}
+
+    steps:
+      - name: Setup | Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup | Force release branch to be at workflow sha
+        run: |
+          git reset --hard ${{ github.sha }}
+
+      - name: Setup | Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Setup | Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Evaluate | Verify upstream has NOT changed
+        # Last chance to abort before causing an error as another PR/push was applied to
+        # the upstream branch while this workflow was running.
+        shell: bash
+        run: |
+          set +o pipefail
+
+          UPSTREAM_BRANCH_NAME="$(git status -sb | head -n 1 | cut -d' ' -f2 | grep -E '\.{3}' | cut -d'.' -f4)"
+          printf '%s\n' "Upstream branch name: $UPSTREAM_BRANCH_NAME"
+
+          set -o pipefail
+
+          if [ -z "$UPSTREAM_BRANCH_NAME" ]; then
+              printf >&2 '%s\n' "::error::Unable to determine upstream branch name!"
+              exit 1
+          fi
+
+          git fetch "${UPSTREAM_BRANCH_NAME%%/*}"
+
+          if ! UPSTREAM_SHA="$(git rev-parse "$UPSTREAM_BRANCH_NAME")"; then
+              printf >&2 '%s\n' "::error::Unable to determine upstream branch sha!"
+              exit 1
+          fi
+
+          HEAD_SHA="$(git rev-parse HEAD)"
+
+          if [ "$HEAD_SHA" != "$UPSTREAM_SHA" ]; then
+              printf >&2 '%s\n' "[HEAD SHA] $HEAD_SHA != $UPSTREAM_SHA [UPSTREAM SHA]"
+              printf >&2 '%s\n' "::error::Upstream has changed, aborting release..."
+              exit 1
+          fi
+
+          printf '%s\n' "Verified upstream branch has not changed, continuing with release..."
+
+      - name: Action | Semantic Version Release
+        id: release
+        uses: python-semantic-release/python-semantic-release@v10.3.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git_committer_name: "github-actions"
+          git_committer_email: "actions@users.noreply.github.com"
+          force: ${{ github.event.inputs.force_level != 'none' && github.event.inputs.force_level || '' }}
+          prerelease: ${{ github.event.inputs.prerelease == 'true' || false }}
+          no_operation_mode: ${{ github.event.inputs.dry_run == 'true' || false }}
+
+      - name: Build | Create Distribution Packages
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        run: |
+          # Build packages to verify template produces valid Python packages
+          python -m pip install --upgrade build
+          python -m build
+
+          # Verify package metadata
+          python -m pip install --upgrade twine
+          twine check dist/*
+
+      - name: Upload | Build Artifacts
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-distribution-artifacts
+          path: dist/
+          retention-days: 7 # Shorter retention for template verification
+
+      - name: Publish | Upload to GitHub Release Assets
+        if: steps.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
+        uses: python-semantic-release/publish-action@v10.3.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.release.outputs.tag }}
+
+      - name: Notify | Release Summary
+        if: always()
+        run: |
+          echo "## 🚀 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Released | ${{ steps.release.outputs.released }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | ${{ steps.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tag | ${{ steps.release.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit SHA | ${{ steps.release.outputs.commit_sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry Run | ${{ github.event.inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.release.outputs.released }}" == "true" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📋 Release Notes" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.release.outputs.release_notes }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  notify:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: always() && needs.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
+
+    steps:
+      - name: Notify | Create Release Announcement
+        run: |
+          echo "🎉 Successfully released version ${{ needs.release.outputs.version }}!"
+          echo "📦 Template Package: Verified builds successfully"
+          echo "🏷️ GitHub Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}"
+          echo "📋 Use this template: ${{ github.server_url }}/${{ github.repository }}/generate"
+
+  template-validation:
+    name: Validate Template Usage
+    runs-on: ubuntu-latest
+    needs: release
+    if: needs.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
+
+    steps:
+      - name: Test | Template Generation
+        run: |
+          echo "✅ Template ready for use"
+          echo "📚 Documentation: ${{ github.server_url }}/${{ github.repository }}/blob/main/README.md"
+          echo "🔧 Configuration: ${{ github.server_url }}/${{ github.repository }}/blob/main/docs/github-configuration.md"
+          echo "🚀 Releases: ${{ github.server_url }}/${{ github.repository }}/blob/main/docs/release-workflow.md"
