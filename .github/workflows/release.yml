@@ -5,27 +5,27 @@ on:
     workflows: ["CI", "Container"]
     types:
       - completed
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
     inputs:
       force_level:
-        description: 'Force a specific version bump (patch, minor, major, prerelease)'
+        description: "Force a specific version bump (patch, minor, major, prerelease)"
         required: false
-        default: 'none'
+        default: "none"
         type: choice
         options:
-          - 'none'
+          - "none"
           - patch
           - minor
           - major
           - prerelease
       prerelease:
-        description: 'Create a prerelease'
+        description: "Create a prerelease"
         required: false
         default: false
         type: boolean
       dry_run:
-        description: 'Perform a dry run (no actual release)'
+        description: "Perform a dry run (no actual release)"
         required: false
         default: false
         type: boolean
@@ -55,31 +55,31 @@ jobs:
           echo "Checking workflow: ${{ github.event.workflow_run.name }}"
           echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
           echo "Commit SHA: ${{ github.event.workflow_run.head_sha }}"
-          
+
           # Exit if this workflow failed
           if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
             echo "success=false" >> $GITHUB_OUTPUT
             echo "Workflow ${{ github.event.workflow_run.name }} failed, skipping release"
             exit 1
           fi
-          
+
           # Check if both CI and Container workflows have succeeded for this commit
           commit_sha="${{ github.event.workflow_run.head_sha }}"
-          
+
           echo "Checking CI and Container workflow status for commit: $commit_sha"
-          
+
           # Get workflow runs for this commit
           ci_status=$(gh api "/repos/${{ github.repository }}/actions/workflows/ci.yml/runs" \
             --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\" and .conclusion != null) | .conclusion" \
             | head -n1)
-            
+
           container_status=$(gh api "/repos/${{ github.repository }}/actions/workflows/container.yml/runs" \
             --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\" and .conclusion != null) | .conclusion" \
             | head -n1)
-          
+
           echo "CI status: $ci_status"
           echo "Container status: $container_status"
-          
+
           if [ "$ci_status" = "success" ] && [ "$container_status" = "success" ]; then
             echo "success=true" >> $GITHUB_OUTPUT
             echo "Both CI and Container workflows succeeded for commit $commit_sha"
@@ -97,7 +97,7 @@ jobs:
         github.event_name == 'workflow_dispatch' ||
         (github.event_name == 'workflow_run' && needs.check-workflows-success.outputs.workflows-success == 'true')
       )
-    
+
     permissions:
       contents: write
       id-token: write
@@ -125,8 +125,8 @@ jobs:
       - name: Setup | Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-          cache: 'pip'
+          python-version: "3.13"
+          cache: "pip"
 
       - name: Setup | Install Dependencies
         run: |
@@ -139,32 +139,32 @@ jobs:
         shell: bash
         run: |
           set +o pipefail
-          
+
           UPSTREAM_BRANCH_NAME="$(git status -sb | head -n 1 | cut -d' ' -f2 | grep -E '\.{3}' | cut -d'.' -f4)"
           printf '%s\n' "Upstream branch name: $UPSTREAM_BRANCH_NAME"
-          
+
           set -o pipefail
-          
+
           if [ -z "$UPSTREAM_BRANCH_NAME" ]; then
               printf >&2 '%s\n' "::error::Unable to determine upstream branch name!"
               exit 1
           fi
-          
+
           git fetch "${UPSTREAM_BRANCH_NAME%%/*}"
-          
+
           if ! UPSTREAM_SHA="$(git rev-parse "$UPSTREAM_BRANCH_NAME")"; then
               printf >&2 '%s\n' "::error::Unable to determine upstream branch sha!"
               exit 1
           fi
-          
+
           HEAD_SHA="$(git rev-parse HEAD)"
-          
+
           if [ "$HEAD_SHA" != "$UPSTREAM_SHA" ]; then
               printf >&2 '%s\n' "[HEAD SHA] $HEAD_SHA != $UPSTREAM_SHA [UPSTREAM SHA]"
               printf >&2 '%s\n' "::error::Upstream has changed, aborting release..."
               exit 1
           fi
-          
+
           printf '%s\n' "Verified upstream branch has not changed, continuing with release..."
 
       - name: Action | Semantic Version Release
@@ -184,7 +184,7 @@ jobs:
           # Build packages to verify template produces valid Python packages
           python -m pip install --upgrade build
           python -m build
-          
+
           # Verify package metadata
           python -m pip install --upgrade twine
           twine check dist/*
@@ -195,7 +195,7 @@ jobs:
         with:
           name: python-distribution-artifacts
           path: dist/
-          retention-days: 7  # Shorter retention for template verification
+          retention-days: 7 # Shorter retention for template verification
 
       - name: Publish | Upload to GitHub Release Assets
         if: steps.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
@@ -215,7 +215,7 @@ jobs:
           echo "| Tag | ${{ steps.release.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Commit SHA | ${{ steps.release.outputs.commit_sha }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Dry Run | ${{ github.event.inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ "${{ steps.release.outputs.released }}" == "true" ]; then
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### 📋 Release Notes" >> $GITHUB_STEP_SUMMARY
