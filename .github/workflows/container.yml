@@ -121,7 +121,7 @@ jobs:
 
       - name: Test Docker image with custom command
         run: |
-          docker run --rm template-python-project:latest python -c "from template_python_project import hello; print(f'Test: {hello()}')"
+          docker run --rm template-python-project:latest python -c "from template_python_project.main import hello; print(f'Test: {hello()}')"
 
   security-scan:
     runs-on: ubuntu-latest
