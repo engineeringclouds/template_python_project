@@ -21,7 +21,12 @@ htmlcov/
 tests/
 docs/
 scripts/
-*.md
+# Exclude markdown files except README.md
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md
+SUPPORT.md
 .pre-commit-config.yaml
 .gitignore
 .gitattributes
