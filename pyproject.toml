@@ -27,13 +27,13 @@ keywords = ["template", "python", "project", "boilerplate", "ci-cd", "github-act
 dependencies = [
 
 ]
-urls = {
-    "Homepage" = "https://github.com/engineeringclouds/template_python_project",
-    "Documentation" = "https://engineeringclouds.github.io/template_python_project/",
-    "Source" = "https://github.com/engineeringclouds/template_python_project",
-    "Tracker" = "https://github.com/engineeringclouds/template_python_project/issues",
-    "Template" = "https://github.com/engineeringclouds/template_python_project/generate"
-}
+
+[project.urls]
+"Homepage" = "https://github.com/engineeringclouds/template_python_project"
+"Documentation" = "https://engineeringclouds.github.io/template_python_project/"
+"Source" = "https://github.com/engineeringclouds/template_python_project"
+"Tracker" = "https://github.com/engineeringclouds/template_python_project/issues"
+"Template" = "https://github.com/engineeringclouds/template_python_project/generate"
 
 [project.optional-dependencies]
 dev = [
