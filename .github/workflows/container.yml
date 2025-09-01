@@ -22,13 +22,53 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Wait for CI workflow
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-name: "test"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-          allowed-conclusions: success
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          commit_sha="${{ github.event.pull_request.head.sha }}"
+          echo "Waiting for CI workflow to complete for commit: $commit_sha"
+
+          max_attempts=60  # 10 minutes (60 * 10 seconds)
+          attempt=0
+
+          while [ $attempt -lt $max_attempts ]; do
+            echo "Attempt $((attempt + 1))/$max_attempts: Checking CI workflow status..."
+
+            # Get the CI workflow runs for this commit
+            workflow_runs=$(gh api "/repos/${{ github.repository }}/actions/workflows/ci.yml/runs" \
+              --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\")")
+
+            if [ -z "$workflow_runs" ]; then
+              echo "No CI workflow runs found for this commit yet, waiting..."
+              sleep 10
+              attempt=$((attempt + 1))
+              continue
+            fi
+
+            # Check if any CI run for this commit has completed
+            completed_runs=$(echo "$workflow_runs" | jq -r 'select(.status == "completed")')
+
+            if [ -n "$completed_runs" ]; then
+              # Get the conclusion of the most recent completed run
+              conclusion=$(echo "$completed_runs" | jq -r '.conclusion' | head -n1)
+              echo "CI workflow completed with conclusion: $conclusion"
+
+              if [ "$conclusion" = "success" ]; then
+                echo "CI workflow completed successfully!"
+                exit 0
+              else
+                echo "CI workflow failed with conclusion: $conclusion"
+                exit 1
+              fi
+            else
+              echo "CI workflow is still running, waiting..."
+              sleep 10
+              attempt=$((attempt + 1))
+            fi
+          done
+
+          echo "Timeout waiting for CI workflow to complete"
+          exit 1
 
   # Check if CI workflow was successful (for workflow_run trigger)
   check-ci-success:
