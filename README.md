@@ -35,43 +35,73 @@ This template was collaboratively developed through "vibe coding" - an iterative
 
 ## Getting Started
 
-### Local Development
+<details>
+<summary>💻 <strong>Local Development Setup</strong></summary>
 
-1. Clone the repository:
+### Quick Start
+
+1. **Clone the repository:**
+
     ```sh
     git clone https://github.com/engineeringclouds/template_python_project.git
     cd template_python_project
     ```
-2. Run the bootstrap script for your OS:
-    - Linux/macOS:
-        ```sh
-        ./scripts/bootstrap.sh
-        ```
-    - Windows (PowerShell):
-        ```powershell
-        .\scripts\bootstrap.ps1
-        ```
-3. Run the app:
+
+2. **Bootstrap your environment:**
+
+    **Linux/macOS:**
+
+    ```sh
+    ./scripts/bootstrap.sh
+    ```
+
+    **Windows (PowerShell):**
+
+    ```powershell
+    .\scripts\bootstrap.ps1
+    ```
+
+3. **Run the application:**
     ```sh
     python -m template_python_project
     ```
 
-### Running in a Container
+</details>
 
-1. Build the Docker image:
+<details>
+<summary>🐳 <strong>Container Setup</strong></summary>
+
+### Docker Quick Start
+
+1. **Build the image:**
+
     ```sh
     docker build -t template-python-project .
     ```
-2. Run the container:
+
+2. **Run the container:**
     ```sh
     docker run --rm template-python-project
     ```
 
-### Running Tests
+</details>
+
+<details>
+<summary>🧪 <strong>Testing</strong></summary>
+
+### Run Tests
 
 ```sh
 pytest
 ```
+
+### Run with Coverage
+
+```sh
+pytest --cov --cov-report=html
+```
+
+</details>
 
 ## Example Output
 
@@ -81,6 +111,210 @@ When you run the application, you should see:
 $ python -m template_python_project
 Hello, world!
 ```
+
+## 📚 Usage Examples
+
+<details>
+<summary>🚀 <strong>Creating a New Project from This Template</strong></summary>
+
+### Method 1: GitHub Template (Recommended)
+
+1. Click [**Use this template**](https://github.com/engineeringclouds/template_python_project/generate)
+2. Choose a repository name (e.g., `my-awesome-project`)
+3. Clone your new repository:
+    ```sh
+    git clone https://github.com/yourusername/my-awesome-project.git
+    cd my-awesome-project
+    ```
+
+### Method 2: Manual Setup
+
+```sh
+# Download and extract template
+curl -L https://github.com/engineeringclouds/template_python_project/archive/main.zip -o template.zip
+unzip template.zip
+mv template_python_project-main my-awesome-project
+cd my-awesome-project
+
+# Initialize as new git repository
+rm -rf .git
+git init
+git add .
+git commit -m "Initial commit from template"
+```
+
+</details>
+
+<details>
+<summary>🔧 <strong>Customizing the Template</strong></summary>
+
+### Rename the Package
+
+1. **Update directory structure:**
+
+    ```sh
+    mv src/template_python_project src/my_package_name
+    ```
+
+2. **Update pyproject.toml:**
+
+    ```toml
+    [project]
+    name = "my-package-name"
+    # ... other settings
+    ```
+
+3. **Update imports and references:**
+    ```python
+    # In src/my_package_name/__main__.py
+    from my_package_name.main import main
+    ```
+
+### Add Your Own Functionality
+
+```python
+# src/my_package_name/main.py
+def hello(name: str = "world") -> str:
+    """Generate a personalized greeting."""
+    return f"Hello, {name}!"
+
+def main():
+    import sys
+    name = sys.argv[1] if len(sys.argv) > 1 else "world"
+    print(hello(name))
+```
+
+</details>
+
+<details>
+<summary>🔄 <strong>Development Workflow Examples</strong></summary>
+
+### Daily Development
+
+```sh
+# Activate environment
+source .venv/bin/activate  # or .\.venv\Scripts\Activate.ps1 on Windows
+
+# Make changes to your code
+# ...
+
+# Run quality checks
+pre-commit run --all-files
+
+# Run tests with coverage
+pytest --cov
+
+# Build and test container
+docker build -t my-project .
+docker run --rm my-project
+```
+
+### Release Workflow
+
+```sh
+# Make changes using conventional commits
+git commit -m "feat: add user authentication system"
+git commit -m "fix: resolve memory leak in data processing"
+git commit -m "docs: update installation instructions"
+
+# Push to main branch (triggers automatic release)
+git push origin main
+```
+
+### Manual Release
+
+Use GitHub Actions workflow dispatch with options:
+
+-   **Force version bump:** patch, minor, major, prerelease
+-   **Create prerelease:** For testing unreleased features
+-   **Dry run:** Test release process without creating actual release
+
+</details>
+
+<details>
+<summary>🧪 <strong>Testing Examples</strong></summary>
+
+### Basic Testing
+
+```python
+# tests/test_my_feature.py
+import pytest
+from my_package_name import my_function
+
+def test_my_function():
+    """Test basic functionality."""
+    result = my_function("input")
+    assert result == "expected_output"
+
+def test_my_function_edge_case():
+    """Test edge case handling."""
+    with pytest.raises(ValueError):
+        my_function(None)
+```
+
+### Running Different Test Scenarios
+
+```sh
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_my_feature.py
+
+# Run with coverage report
+pytest --cov --cov-report=html
+
+# Run performance tests only
+pytest -m performance
+
+# Run tests in parallel
+pytest -n auto
+```
+
+</details>
+
+<details>
+<summary>🐳 <strong>Container Usage Examples</strong></summary>
+
+### Development Container
+
+```sh
+# Build development image with test dependencies
+docker build -f Dockerfile.dev -t my-project-dev .
+
+# Run container with volume mounting for live development
+docker run -v $(pwd):/app -it my-project-dev bash
+```
+
+### Production Container
+
+```sh
+# Build optimized production image
+docker build -t my-project:latest .
+
+# Run with environment variables
+docker run -e MY_CONFIG_VAR=value my-project:latest
+
+# Run with specific port mapping
+docker run -p 8080:8080 my-project:latest
+```
+
+### Multi-stage Build Example
+
+```dockerfile
+# Add to your Dockerfile for optimized builds
+FROM python:3.13-slim as builder
+WORKDIR /build
+COPY pyproject.toml .
+RUN pip install build && python -m build
+
+FROM python:3.13-slim as runtime
+COPY --from=builder /build/dist/*.whl .
+RUN pip install *.whl
+CMD ["python", "-m", "my_package_name"]
+```
+
+</details>
 
 ## GitHub Repository Configuration
 
@@ -120,23 +354,80 @@ For detailed information, see:
 
 ## Troubleshooting
 
-### Test Import Issues
+<details>
+<summary>🐛 <strong>Common Issues</strong></summary>
 
-If you encounter import errors when running tests, ensure you're using pytest with the correct configuration. The `pyproject.toml` includes `pythonpath = ["src"]` which should resolve import issues automatically.
+### Test Import Errors
 
-If problems persist, you can run tests with:
+**Problem:** `ModuleNotFoundError` when running tests
+**Solution:** Ensure pytest configuration is correct:
 
 ```sh
+# Method 1: Use pytest with proper path
 PYTHONPATH=src pytest
+
+# Method 2: Check pyproject.toml has:
+# [tool.pytest.ini_options]
+# pythonpath = ["src"]
 ```
 
 ### Virtual Environment Issues
 
-If the bootstrap scripts fail, ensure Python 3.13+ is installed and accessible. You can check with:
+**Problem:** Bootstrap scripts fail or Python not found
+**Solutions:**
 
 ```sh
-python --version  # or python3 --version on some systems
+# Check Python version
+python --version  # Should be 3.13+
+
+# Manual environment setup
+python -m venv .venv
+# Linux/macOS:
+source .venv/bin/activate
+# Windows:
+.\.venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -e ".[dev]"
 ```
+
+### Container Build Failures
+
+**Problem:** Docker build fails or image won't run
+**Solutions:**
+
+```sh
+# Check Docker is running
+docker --version
+
+# Clean build (no cache)
+docker build --no-cache -t template-python-project .
+
+# Debug build process
+docker build -t template-python-project . --progress=plain
+
+# Check logs
+docker logs <container-id>
+```
+
+### GitHub Actions Failures
+
+**Problem:** CI/CD workflows fail
+**Common causes:**
+
+-   Missing secrets or environment variables
+-   Workflow file syntax errors
+-   Permission issues with GITHUB_TOKEN
+-   Dependency conflicts
+
+**Debug steps:**
+
+1. Check workflow logs in GitHub Actions tab
+2. Verify all required secrets are configured
+3. Test workflow locally with `act` (if available)
+4. Compare with working template version
+
+</details>
 
 ### Security Note
 
@@ -157,15 +448,25 @@ This project uses GitHub Actions with a robust CI/CD pipeline:
 
 ### Workflow Dependencies
 
-```
-Push/PR → CI Workflow (Lint + Format + Type Check + Test)
-            ↓ (on success)
-          Container Workflow (Build + Test + Security Scan)
+<details>
+<summary>📱 <strong>View Workflow Diagram</strong></summary>
 
-Push to main → Release Workflow (Semantic Versioning + Template Validation)
+```mermaid
+graph TD
+    A[Push/PR] --> B[CI Workflow]
+    B --> C[Lint + Format + Type Check + Test]
+    C --> D[Container Workflow]
+    D --> E[Build + Test + Security Scan]
+
+    F[Push to main] --> G[Release Workflow]
+    G --> H[Semantic Versioning + Template Validation]
 ```
 
-1. **CI Workflow** (`ci.yml`): Runs on every push and pull request
+</details>
+
+**On every push/pull request:**
+
+1. **CI Workflow** (`ci.yml`) - Quality checks across platforms
 
     - Linting with Ruff
     - Code formatting check with Black
@@ -173,19 +474,19 @@ Push to main → Release Workflow (Semantic Versioning + Template Validation)
     - Testing with pytest
     - Cross-platform testing (Ubuntu, Windows, macOS)
 
-2. **Container Workflow** (`container.yml`): Only runs after CI passes
-
+2. **Container Workflow** (`container.yml`) - Only after CI passes
     - **Dependency**: Waits for CI workflow to complete successfully
     - Docker image building and testing
     - Container security scanning with Trivy
     - SARIF upload for security findings
 
-3. **Release Workflow** (`release.yml`): Automated semantic versioning
-    - **Dependency**: Runs on pushes to main branch
-    - Analyzes conventional commits for version bumps
-    - Generates changelogs and creates GitHub releases
-    - Validates template functionality by building packages
-    - Supports manual releases with custom options
+**On main branch pushes:** 3. **Release Workflow** (`release.yml`) - Automated semantic versioning
+
+-   **Dependency**: Runs on pushes to main branch
+-   Analyzes conventional commits for version bumps
+-   Generates changelogs and creates GitHub releases
+-   Validates template functionality by building packages
+-   Supports manual releases with custom options
 
 This ensures that only validated, tested code gets containerized and released, following the fail-fast principle and optimizing resource usage.
 
@@ -205,6 +506,7 @@ See [Release Workflow Guide](docs/release-workflow.md) for detailed information.
 
 -   See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 -   See [Release Workflow Guide](docs/release-workflow.md) for automated release information
+-   See [Usage Examples](docs/examples.md) for detailed implementation examples
 -   See [GitHub Configuration Guide](docs/github-configuration.md) for repository setup
 -   See [GitHub CLI Reference](docs/github-cli-reference.md) for CLI automation
 -   See [CHANGELOG.md](CHANGELOG.md) for release history

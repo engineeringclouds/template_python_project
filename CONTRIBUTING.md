@@ -3,9 +3,13 @@
 Thank you for considering contributing to this project!  
 We welcome contributions of all kinds, including bug reports, feature requests, documentation improvements, and code.
 
+This project embodies a collaborative "vibe coding" philosophy - we believe the best solutions emerge through iterative conversation and real-world testing, whether that's human-to-human or human-to-AI collaboration. We value the process of building something useful together.
+
 ## Code of Conduct
 
 This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior by opening an issue or contacting the project maintainers.
+
+This project adheres to the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
 
 ## How to Contribute
 
@@ -79,11 +83,6 @@ This project and everyone participating in it is governed by our [Code of Conduc
 -   Use the [issue tracker](https://github.com/yourusername/template_python_project/issues) to report bugs or request features.
 -   Please provide as much detail as possible.
 
-## Code of Conduct
-
-This project adheres to the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).  
-By participating, you are expected to uphold this code.
-
 ## Containerization
 
 You can build and run the Hello World app in a container using Docker:
@@ -95,4 +94,4 @@ docker run --rm template-python-project
 
 ---
 
-Thank you for helping make
+Thank you for helping make this template better! We believe in collaborative development and appreciate every contribution, whether it's code, documentation, or ideas. Together, we can build something truly useful for the Python community.
