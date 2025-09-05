@@ -229,7 +229,7 @@ display_manual_steps() {
 🌐 MANUAL CONFIGURATION NEEDED:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. � Branch Protection (if automatic setup failed):
+1. 🛡️ Branch Protection (if automatic setup failed):
    - Go to: Settings → Branches → Add rule for 'main'
    - Enable: "Require status checks to pass before merging"
    - Select required status checks:
