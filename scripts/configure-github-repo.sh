@@ -242,7 +242,7 @@ display_manual_steps() {
    - Enable: "Require conversation resolution before merging"
    - Enable: "Include administrators"
 
-2. �📸 Social Preview Image:
+2. 📸 Social Preview Image:
    - Go to: Settings → General → Social preview
    - Upload a 1280x640 image representing your project
 
