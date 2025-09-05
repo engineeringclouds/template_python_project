@@ -22,7 +22,7 @@ on:
         default: false
         type: boolean
       dry_run:
-        description: 'Perform a dry run (no actual release)'
+        description: "Perform a dry run (no actual release)"
         required: false
         default: false
         type: boolean
