@@ -6,23 +6,23 @@ on:
   workflow_dispatch:
     inputs:
       force_level:
-        description: 'Force a specific version bump (patch, minor, major, prerelease)'
+        description: "Force a specific version bump (patch, minor, major, prerelease)"
         required: false
-        default: 'none'
+        default: "none"
         type: choice
         options:
-          - 'none'
+          - "none"
           - patch
           - minor
           - major
           - prerelease
       prerelease:
-        description: 'Create a prerelease'
+        description: "Create a prerelease"
         required: false
         default: false
         type: boolean
       dry_run:
-        description: 'Perform a dry run (no actual release)'
+        description: "Perform a dry run (no actual release)"
         required: false
         default: false
         type: boolean
@@ -39,7 +39,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: write
       id-token: write

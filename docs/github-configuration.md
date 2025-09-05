@@ -18,97 +18,111 @@ chmod +x scripts/configure-github-repo.sh
 ## What the Script Does
 
 ### 🔧 Repository Settings
-- Sets description and topics for discoverability
-- Enables discussions, issues, and wiki
-- Configures merge settings (delete branch on merge, auto-merge, squash merge)
-- Marks repository as a template
+
+-   Sets description and topics for discoverability
+-   Enables discussions, issues, and wiki
+-   Configures merge settings (delete branch on merge, auto-merge, squash merge)
+-   Marks repository as a template
 
 ### 🏷️ Labels
+
 Creates a comprehensive label system including:
-- **good first issue** - Perfect for newcomers
-- **help wanted** - Community assistance needed
-- **enhancement** - New features and improvements
-- **documentation** - Documentation improvements
-- **bug** - Confirmed bugs
-- **security** - Security-related issues
-- **performance** - Performance optimizations
-- **testing** - Test-related changes
-- **dependencies** - Dependency updates
-- **ci/cd** - CI/CD pipeline changes
-- **priority levels** - high/medium/low priority classification
+
+-   **good first issue** - Perfect for newcomers
+-   **help wanted** - Community assistance needed
+-   **enhancement** - New features and improvements
+-   **documentation** - Documentation improvements
+-   **bug** - Confirmed bugs
+-   **security** - Security-related issues
+-   **performance** - Performance optimizations
+-   **testing** - Test-related changes
+-   **dependencies** - Dependency updates
+-   **ci/cd** - CI/CD pipeline changes
+-   **workflow** - GitHub Actions workflow improvements
+-   **priority levels** - high/medium/low priority classification
 
 ### 🛡️ Security
-- Attempts to configure branch protection rules
-- Verifies security-related community health files
+
+-   Attempts to configure branch protection rules
+-   Verifies security-related community health files
 
 ### 📋 Community Health
+
 Verifies the presence of:
-- README.md
-- LICENSE
-- CODE_OF_CONDUCT.md
-- CONTRIBUTING.md
-- SECURITY.md
-- SUPPORT.md
-- Issue templates
-- Pull request template
+
+-   README.md
+-   LICENSE
+-   CODE_OF_CONDUCT.md
+-   CONTRIBUTING.md
+-   SECURITY.md
+-   SUPPORT.md
+-   Issue templates
+-   Pull request template
 
 ## Prerequisites
 
 1. **GitHub CLI Installation**
-   ```bash
-   # macOS
-   brew install gh
-   
-   # Ubuntu/Debian
-   curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-   sudo apt update
-   sudo apt install gh
-   
-   # Or download from: https://github.com/cli/cli/releases
-   ```
+
+    ```bash
+    # macOS
+    brew install gh
+
+    # Ubuntu/Debian
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo apt update
+    sudo apt install gh
+
+    # Or download from: https://github.com/cli/cli/releases
+    ```
 
 2. **Authentication**
-   ```bash
-   gh auth login
-   ```
+    ```bash
+    gh auth login
+    ```
 
 ## Manual Configuration Required
 
 Some settings require the GitHub web interface:
 
 ### 1. Social Preview Image
-- Go to **Settings → General → Social preview**
-- Upload a 1280×640 image representing your project
-- This appears when your repository is shared on social media
+
+-   Go to **Settings → General → Social preview**
+-   Upload a 1280×640 image representing your project
+-   This appears when your repository is shared on social media
 
 ### 2. Homepage URL
-- Go to **Settings → General → Website**
-- Add your project documentation or website URL
+
+-   Go to **Settings → General → Website**
+-   Add your project documentation or website URL
 
 ### 3. Advanced Security Settings
-- Go to **Settings → Security & analysis**
-- Enable:
-  - Dependabot alerts
-  - Dependabot security updates
-  - Code scanning (if applicable)
+
+-   Go to **Settings → Security & analysis**
+-   Enable:
+    -   Dependabot alerts
+    -   Dependabot security updates
+    -   Code scanning (if applicable)
 
 ### 4. GitHub Pages (Optional)
-- Go to **Settings → Pages**
-- Configure source branch and folder for documentation
+
+-   Go to **Settings → Pages**
+-   Configure source branch and folder for documentation
 
 ### 5. Sponsorship (Optional)
-- Create `.github/FUNDING.yml` with your sponsorship platforms:
-  ```yaml
-  github: [your-username]
-  patreon: your-username
-  ko_fi: your-username
-  custom: ["https://your-website.com/donate"]
-  ```
+
+-   Create `.github/FUNDING.yml` with your sponsorship platforms:
+    ```yaml
+    github: [your-username]
+    patreon: your-username
+    ko_fi: your-username
+    custom: ["https://your-website.com/donate"]
+    ```
 
 ## Advanced Usage
 
 ### Custom Label Configuration
+
 Edit the `labels` array in the script to customize your label system:
 
 ```bash
@@ -118,6 +132,7 @@ declare -A labels=(
 ```
 
 ### Repository-Specific Settings
+
 You can modify the script to include repository-specific configurations:
 
 ```bash
@@ -127,6 +142,7 @@ You can modify the script to include repository-specific configurations:
 ```
 
 ### Branch Protection Customization
+
 Modify the branch protection API call to match your workflow requirements:
 
 ```bash
@@ -139,6 +155,7 @@ gh api repos/"$REPO"/branches/main/protection \
 ## Troubleshooting
 
 ### Authentication Issues
+
 ```bash
 # Check authentication status
 gh auth status
@@ -148,10 +165,12 @@ gh auth login --web
 ```
 
 ### Permission Issues
-- Ensure you have admin access to the repository
-- Some settings (like branch protection) require admin privileges
+
+-   Ensure you have admin access to the repository
+-   Some settings (like branch protection) require admin privileges
 
 ### Script Execution Issues
+
 ```bash
 # Make script executable
 chmod +x scripts/configure-github-repo.sh
@@ -163,6 +182,7 @@ bash -n scripts/configure-github-repo.sh
 ## GitHub CLI Commands Reference
 
 ### Repository Management
+
 ```bash
 # Edit repository settings
 gh repo edit owner/repo --description "New description"
@@ -175,6 +195,7 @@ gh repo clone owner/repo
 ```
 
 ### Label Management
+
 ```bash
 # List labels
 gh label list
@@ -190,6 +211,7 @@ gh label delete "unwanted-label"
 ```
 
 ### Issue and PR Management
+
 ```bash
 # List issues
 gh issue list
@@ -219,18 +241,18 @@ You can integrate repository configuration into your CI/CD pipeline:
 ```yaml
 name: Configure Repository
 on:
-  repository_dispatch:
-    types: [configure-repo]
+    repository_dispatch:
+        types: [configure-repo]
 
 jobs:
-  configure:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure Repository
-        run: ./scripts/configure-github-repo.sh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    configure:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Configure Repository
+              run: ./scripts/configure-github-repo.sh
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 This allows you to trigger repository configuration through the GitHub API or manually through the Actions tab.

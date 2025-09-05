@@ -269,6 +269,8 @@ git push origin feat/user-authentication
 
 ## Related Documentation
 
+-   [Workflow Architecture Documentation](workflow-architecture.md) - Comprehensive workflow dependency implementation
+-   [GitHub Configuration Guide](github-configuration.md) - Repository setup and branch protection
 -   [Conventional Commits Specification](https://www.conventionalcommits.org/)
 -   [Python Semantic Release Documentation](https://python-semantic-release.readthedocs.io/)
 -   [GitHub Actions Documentation](https://docs.github.com/en/actions)
