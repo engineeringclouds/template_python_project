@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       force_level:
-        description: 'Force a specific version bump (patch, minor, major, prerelease)'
+        description: "Force a specific version bump (patch, minor, major, prerelease)"
         required: false
         default: 'none'
         type: choice
