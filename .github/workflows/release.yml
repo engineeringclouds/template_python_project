@@ -17,7 +17,7 @@ on:
           - major
           - prerelease
       prerelease:
-        description: 'Create a prerelease'
+        description: "Create a prerelease"
         required: false
         default: false
         type: boolean
