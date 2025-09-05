@@ -5,20 +5,21 @@
 set -e  # Exit on any error
 
 # Configuration
-DEFAULT_REPO="e1. 🛡️ Branch Protection (if automatic setup failed):
-   - Go to: Settings → Branches → Add rule for 'main'
-   - Enable: "Require status checks to pass before merging"
-   - Select required status checks:
-     ✅ PR Validation / ci (ubuntu-latest)
-     ✅ PR Validation / ci (windows-latest)
-     ✅ PR Validation / ci (macos-latest)
-     ✅ PR Validation / container
-     ✅ PR Validation / security-scan
-   - Enable: "Require branches to be up to date before merging"
-   - Enable: "Require conversation resolution before merging"
-   - Enable: "Include administrators"
-
-2. 📸 Social Preview Image:ds/template_python_project"
+# Manual configuration instructions (if automatic setup failed):
+# 1. 🛡️ Branch Protection:
+#    - Go to: Settings → Branches → Add rule for 'main'
+#    - Enable: "Require status checks to pass before merging"
+#    - Select required status checks:
+#      ✅ PR Validation / ci (ubuntu-latest)
+#      ✅ PR Validation / ci (windows-latest)
+#      ✅ PR Validation / ci (macos-latest)
+#      ✅ PR Validation / container
+#      ✅ PR Validation / security-scan
+#    - Enable: "Require branches to be up to date before merging"
+#    - Enable: "Require conversation resolution before merging"
+#    - Enable: "Include administrators"
+# 2. 📸 Social Preview Image
+DEFAULT_REPO="ds/template_python_project"
 REPO="${1:-$DEFAULT_REPO}"
 
 # Colors for output
