@@ -76,7 +76,23 @@ This template was collaboratively developed through "vibe coding" - an iterative
 <details>
 <summary>🐳 <strong>Container Setup</strong></summary>
 
-### Docker Quick Start
+### Pre-built Images
+
+Use the pre-built container images published to GitHub Container Registry:
+
+```sh
+# Pull and run the latest image
+docker pull ghcr.io/engineeringclouds/template_python_project:latest
+docker run --rm ghcr.io/engineeringclouds/template_python_project:latest
+
+# Or pull a specific release version
+docker pull ghcr.io/engineeringclouds/template_python_project:v1.0.0
+docker run --rm ghcr.io/engineeringclouds/template_python_project:v1.0.0
+```
+
+> 📦 **View all available images**: [ghcr.io/engineeringclouds/template_python_project](https://github.com/engineeringclouds/template_python_project/pkgs/container/template_python_project)
+
+### Docker Quick Start (Build from Source)
 
 1. **Build the image:**
 
@@ -280,6 +296,22 @@ pytest -n auto
 
 <details>
 <summary>🐳 <strong>Container Usage Examples</strong></summary>
+
+### Using Pre-built Images
+
+```sh
+# Run latest version
+docker run --rm ghcr.io/engineeringclouds/template_python_project:latest
+
+# Run specific release version
+docker run --rm ghcr.io/engineeringclouds/template_python_project:v1.0.0
+
+# Run with environment variables
+docker run --rm -e MY_CONFIG_VAR=value ghcr.io/engineeringclouds/template_python_project:latest
+
+# Run with specific port mapping
+docker run --rm -p 8080:8080 ghcr.io/engineeringclouds/template_python_project:latest
+```
 
 ### Development Container
 

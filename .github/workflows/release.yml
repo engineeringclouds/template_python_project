@@ -143,8 +143,8 @@ jobs:
         if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
         run: |
           pip install cyclonedx-bom
-          cyclonedx-py requirements -o sbom.cyclonedx.json --format json
-          cyclonedx-py requirements -o sbom.cyclonedx.xml --format xml
+          cyclonedx-py environment -o sbom.cyclonedx.json --output-format JSON --pyproject pyproject.toml
+          cyclonedx-py environment -o sbom.cyclonedx.xml --output-format XML --pyproject pyproject.toml
 
       - name: Upload | Build Artifacts
         if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
@@ -199,6 +199,17 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### 📋 Release Notes" >> $GITHUB_STEP_SUMMARY
             echo "${{ steps.release.outputs.release_notes }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🐳 Container Images" >> $GITHUB_STEP_SUMMARY
+            echo "Container images are automatically built and published to GitHub Container Registry:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Image | Tag | Pull Command |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------|-----|--------------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Latest | \`latest\` | \`docker pull ghcr.io/${{ github.repository }}:latest\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| Release | \`${{ steps.release.outputs.tag }}\` | \`docker pull ghcr.io/${{ github.repository }}:${{ steps.release.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| Main Branch | \`main-$(echo ${{ steps.release.outputs.commit_sha }} | cut -c1-7)\` | \`docker pull ghcr.io/${{ github.repository }}:main-$(echo ${{ steps.release.outputs.commit_sha }} | cut -c1-7)\` |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📦 **View all images**: [ghcr.io/${{ github.repository }}](https://github.com/${{ github.repository }}/pkgs/container/$(echo ${{ github.repository }} | cut -d'/' -f2))" >> $GITHUB_STEP_SUMMARY
           fi
 
   notify:
@@ -214,6 +225,11 @@ jobs:
           echo "📦 Template Package: Verified builds successfully"
           echo "🏷️ GitHub Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.release.outputs.tag }}"
           echo "📋 Use this template: ${{ github.server_url }}/${{ github.repository }}/generate"
+          echo ""
+          echo "🐳 Container Images:"
+          echo "   • Latest: docker pull ghcr.io/${{ github.repository }}:latest"
+          echo "   • Release: docker pull ghcr.io/${{ github.repository }}:${{ needs.release.outputs.tag }}"
+          echo "   • View all: https://github.com/${{ github.repository }}/pkgs/container/$(echo ${{ github.repository }} | cut -d'/' -f2)"
 
   template-validation:
     name: Validate Template Usage
@@ -228,3 +244,4 @@ jobs:
           echo "📚 Documentation: ${{ github.server_url }}/${{ github.repository }}/blob/main/README.md"
           echo "🔧 Configuration: ${{ github.server_url }}/${{ github.repository }}/blob/main/docs/github-configuration.md"
           echo "🚀 Releases: ${{ github.server_url }}/${{ github.repository }}/blob/main/docs/release-workflow.md"
+          echo "🐳 Container Images: https://github.com/${{ github.repository }}/pkgs/container/$(echo ${{ github.repository }} | cut -d'/' -f2)"
