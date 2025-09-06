@@ -23,7 +23,7 @@ fi
 
 # Check if requirements.txt exists (it shouldn't for this project)
 echo "3. Verifying requirements.txt is not used..."
-if [ ! -f "requirements.txt" ] || [ ! -s "requirements.txt" ]; then
+if [ ! -f "requirements.txt" ] && [ ! -s "requirements.txt" ]; then
     echo "✅ requirements.txt is not used (project uses pyproject.toml)"
 else
     echo "⚠️  requirements.txt exists but this project should use pyproject.toml"
