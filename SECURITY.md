@@ -21,11 +21,11 @@ We will respond to security reports within 48 hours and work to address any conf
 
 This template includes several security measures:
 
-- No hardcoded secrets or credentials
-- Secure Docker configuration with non-root user
-- Dependencies managed via `pyproject.toml` for reproducibility
-- `.gitignore` prevents accidental commit of sensitive files
-- Pre-commit hooks help catch security issues early
+-   No hardcoded secrets or credentials
+-   Secure Docker configuration with non-root user
+-   Dependencies managed via `pyproject.toml` for reproducibility
+-   `.gitignore` prevents accidental commit of sensitive files
+-   Pre-commit hooks help catch security issues early
 
 ## Regular Security Maintenance
 
@@ -47,3 +47,29 @@ pip-audit
 ```
 
 Consider automating this check in your CI/CD pipeline.
+
+## Software Bill of Materials (SBOM)
+
+This template automatically generates Software Bills of Materials (SBOMs) during releases to provide:
+
+-   **Supply Chain Transparency**: Complete inventory of all dependencies
+-   **Vulnerability Tracking**: Better identification of vulnerable components
+-   **Compliance Support**: Meeting regulatory and organizational requirements
+
+### SBOM Formats Generated
+
+1. **SPDX JSON** (`sbom.spdx.json`) - Industry standard format
+2. **CycloneDX JSON** (`sbom.cyclonedx.json`) - Security-focused format
+3. **CycloneDX XML** (`sbom.cyclonedx.xml`) - Alternative CycloneDX format
+
+### Using SBOMs
+
+Download SBOMs from GitHub releases and use them with security tools:
+
+```bash
+# Analyze SBOM with vulnerability scanners
+pip install cyclonedx-python-lib
+python -c "from cyclonedx.model import Bom; print(Bom.from_json('sbom.cyclonedx.json'))"
+
+# Use with dependency-track or other SBOM analysis tools
+```

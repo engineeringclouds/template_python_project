@@ -10,8 +10,9 @@ The release workflow automatically:
 2. **Updates version numbers** in template code
 3. **Generates changelogs** based on conventional commits
 4. **Creates GitHub releases** with release notes and template artifacts
-5. **Validates template functionality** by building example packages
-6. **Tags releases** and pushes changes back to the repository
+5. **Generates SBOMs** (Software Bills of Materials) for supply chain security
+6. **Validates template functionality** by building example packages
+7. **Tags releases** and pushes changes back to the repository
 
 ## Template Release Process
 
@@ -21,6 +22,7 @@ Unlike a typical Python package, this template repository focuses on:
 -   **Documentation Updates**: Keeps setup guides and examples current
 -   **Feature Tracking**: Chronicles improvements to the template structure
 -   **User Experience**: Provides clear release notes for template users
+-   **Supply Chain Security**: Generates SBOMs for dependency transparency and security
 
 ## Conventional Commits
 
@@ -112,12 +114,13 @@ Use GitHub's workflow dispatch to manually trigger releases:
 -   Generate/update `CHANGELOG.md`
 -   Create Git tag
 -   Create GitHub release with notes
+-   Generate SBOMs in multiple formats (SPDX, CycloneDX)
 
 ### 4. Template Validation
 
 -   Build Python packages to verify template structure
 -   Validate package metadata with twine
--   Upload sample distributions to GitHub release assets
+-   Upload sample distributions and SBOMs to GitHub release assets
 -   Test template functionality
 
 ## Configuration
@@ -269,6 +272,8 @@ git push origin feat/user-authentication
 
 ## Related Documentation
 
+-   [Workflow Architecture Documentation](workflow-architecture.md) - Comprehensive workflow dependency implementation
+-   [GitHub Configuration Guide](github-configuration.md) - Repository setup and branch protection
 -   [Conventional Commits Specification](https://www.conventionalcommits.org/)
 -   [Python Semantic Release Documentation](https://python-semantic-release.readthedocs.io/)
 -   [GitHub Actions Documentation](https://docs.github.com/en/actions)

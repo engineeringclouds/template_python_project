@@ -1,10 +1,7 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ["CI", "Container"]
-    types:
-      - completed
+  push:
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -40,63 +37,8 @@ permissions:
   contents: read
 
 jobs:
-  # Check if both CI and Container workflows were successful for this commit
-  check-workflows-success:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run'
-    outputs:
-      workflows-success: ${{ steps.check.outputs.success }}
-    steps:
-      - name: Check workflows success
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Checking workflow: ${{ github.event.workflow_run.name }}"
-          echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "Commit SHA: ${{ github.event.workflow_run.head_sha }}"
-
-          # Exit if this workflow failed
-          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
-            echo "success=false" >> $GITHUB_OUTPUT
-            echo "Workflow ${{ github.event.workflow_run.name }} failed, skipping release"
-            exit 1
-          fi
-
-          # Check if both CI and Container workflows have succeeded for this commit
-          commit_sha="${{ github.event.workflow_run.head_sha }}"
-
-          echo "Checking CI and Container workflow status for commit: $commit_sha"
-
-          # Get workflow runs for this commit
-          ci_status=$(gh api "/repos/${{ github.repository }}/actions/workflows/ci.yml/runs" \
-            --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\" and .conclusion != null) | .conclusion" \
-            | head -n1)
-
-          container_status=$(gh api "/repos/${{ github.repository }}/actions/workflows/container.yml/runs" \
-            --jq ".workflow_runs[] | select(.head_sha == \"$commit_sha\" and .conclusion != null) | .conclusion" \
-            | head -n1)
-
-          echo "CI status: $ci_status"
-          echo "Container status: $container_status"
-
-          if [ "$ci_status" = "success" ] && [ "$container_status" = "success" ]; then
-            echo "success=true" >> $GITHUB_OUTPUT
-            echo "Both CI and Container workflows succeeded for commit $commit_sha"
-          else
-            echo "success=false" >> $GITHUB_OUTPUT
-            echo "Not all required workflows have succeeded yet for commit $commit_sha"
-            exit 1
-          fi
-
   release:
     runs-on: ubuntu-latest
-    needs: [check-workflows-success]
-    if: |
-      always() && (
-        github.event_name == 'workflow_dispatch' ||
-        (github.event_name == 'workflow_run' && needs.check-workflows-success.outputs.workflows-success == 'true')
-      )
 
     permissions:
       contents: write
@@ -189,6 +131,21 @@ jobs:
           python -m pip install --upgrade twine
           twine check dist/*
 
+      - name: Security | Generate SBOM
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        uses: anchore/sbom-action@v0
+        with:
+          path: ./
+          format: spdx-json
+          output-file: "sbom.spdx.json"
+
+      - name: Security | Generate SBOM (CycloneDX format)
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements -o sbom.cyclonedx.json --format json
+          cyclonedx-py requirements -o sbom.cyclonedx.xml --format xml
+
       - name: Upload | Build Artifacts
         if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
         uses: actions/upload-artifact@v4
@@ -197,12 +154,34 @@ jobs:
           path: dist/
           retention-days: 7 # Shorter retention for template verification
 
+      - name: Upload | SBOM Artifacts
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-artifacts
+          path: |
+            sbom.spdx.json
+            sbom.cyclonedx.json
+            sbom.cyclonedx.xml
+          retention-days: 90 # Longer retention for security tracking
+
       - name: Publish | Upload to GitHub Release Assets
         if: steps.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
         uses: python-semantic-release/publish-action@v10.3.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.release.outputs.tag }}
+
+      - name: Publish | Attach SBOM to Release
+        if: steps.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
+        run: |
+          gh release upload ${{ steps.release.outputs.tag }} \
+            sbom.spdx.json \
+            sbom.cyclonedx.json \
+            sbom.cyclonedx.xml \
+            --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify | Release Summary
         if: always()

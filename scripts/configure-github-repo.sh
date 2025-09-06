@@ -5,6 +5,20 @@
 set -e  # Exit on any error
 
 # Configuration
+# Manual configuration instructions (if automatic setup failed):
+# 1. 🛡️ Branch Protection:
+#    - Go to: Settings → Branches → Add rule for 'main'
+#    - Enable: "Require status checks to pass before merging"
+#    - Select required status checks:
+#      ✅ PR Validation / ci (ubuntu-latest)
+#      ✅ PR Validation / ci (windows-latest)
+#      ✅ PR Validation / ci (macos-latest)
+#      ✅ PR Validation / container
+#      ✅ PR Validation / security-scan
+#    - Enable: "Require branches to be up to date before merging"
+#    - Enable: "Require conversation resolution before merging"
+#    - Enable: "Include administrators"
+# 2. 📸 Social Preview Image
 DEFAULT_REPO="engineeringclouds/template_python_project"
 REPO="${1:-$DEFAULT_REPO}"
 
@@ -40,7 +54,15 @@ check_gh_cli() {
         # For platform-specific instructions, see the official documentation above.
         exit 1
     fi
-    
+
+    if ! command -v jq &> /dev/null; then
+        log_error "jq is not installed. Please install it first:"
+        echo "  - macOS: brew install jq"
+        echo "  - Ubuntu: sudo apt-get install jq"
+        echo "  - Windows: https://stedolan.github.io/jq/download/"
+        exit 1
+    fi
+
     if ! gh auth status &> /dev/null; then
         log_error "GitHub CLI is not authenticated. Please run: gh auth login"
         exit 1
@@ -49,7 +71,7 @@ check_gh_cli() {
 
 configure_repository_settings() {
     log_info "Configuring repository settings for $REPO..."
-    
+
     # Basic repository settings
     gh repo edit "$REPO" \
         --description "Production-ready Python project template with CI/CD, security scanning, and comprehensive community health files" \
@@ -70,13 +92,13 @@ configure_repository_settings() {
         --enable-auto-merge \
         --enable-squash-merge \
         || log_warning "Some repository settings may have failed to update"
-    
+
     log_success "Repository settings configured"
 }
 
 create_helpful_labels() {
     log_info "Creating helpful labels..."
-    
+
     # Define labels with colors and descriptions
     declare -A labels=(
         ["good first issue"]="7057ff|Good for newcomers - perfect for first-time contributors"
@@ -92,15 +114,16 @@ create_helpful_labels() {
         ["testing"]="1d76db|Related to testing - unit tests, integration tests"
         ["dependencies"]="0366d6|Dependency updates - package updates"
         ["ci/cd"]="28a745|Continuous Integration/Deployment - GitHub Actions"
+        ["workflow"]="6f42c1|GitHub Actions workflow improvements"
         ["breaking change"]="b60205|Breaking change - requires major version bump"
         ["priority: high"]="ff4757|High priority - should be addressed soon"
         ["priority: medium"]="ffa726|Medium priority - normal timeline"
         ["priority: low"]="66bb6a|Low priority - nice to have"
     )
-    
+
     for label in "${!labels[@]}"; do
         IFS='|' read -r color description <<< "${labels[$label]}"
-        
+
         if gh label create "$label" --repo "$REPO" --description "$description" --color "$color" 2>/dev/null; then
             log_success "Created label: $label"
         else
@@ -112,27 +135,55 @@ create_helpful_labels() {
             fi
         fi
     done
-    
+
     log_success "Labels configuration complete"
 }
 
 configure_branch_protection() {
     log_info "Configuring branch protection rules..."
-    
+
+    # Define required status checks for the new workflow architecture
+    local required_checks=(
+        "PR Validation / ci (ubuntu-latest)"
+        "PR Validation / ci (windows-latest)"
+        "PR Validation / ci (macos-latest)"
+        "PR Validation / container"
+        "PR Validation / security-scan"
+    )
+
+    # Convert array to JSON format
+    local contexts_json=$(printf '%s\n' "${required_checks[@]}" | jq -Rs 'split("\n")[:-1]')
+
+    log_info "Setting up branch protection with status checks:"
+    for check in "${required_checks[@]}"; do
+        echo "  - $check"
+    done
+
     # Enable branch protection for main branch
     # Note: This requires push access to the repository
-    gh api repos/"$REPO"/branches/main/protection \
+    if gh api repos/"$REPO"/branches/main/protection \
         --method PUT \
-        --field required_status_checks='{"strict":true,"contexts":["ci"]}' \
+        --field required_status_checks="{\"strict\":true,\"contexts\":$contexts_json}" \
         --field enforce_admins=true \
-        --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true,"require_code_owner_reviews":true}' \
+        --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true,"require_code_owner_reviews":false,"require_last_push_approval":false}' \
         --field restrictions=null \
-        2>/dev/null && log_success "Branch protection configured" || log_warning "Branch protection setup requires admin access"
+        --field allow_force_pushes=false \
+        --field allow_deletions=false \
+        --field block_creations=false \
+        --field required_conversation_resolution=true \
+        2>/dev/null; then
+
+        log_success "Branch protection configured with required status checks"
+        log_info "All PR validation workflow jobs must pass before merge"
+    else
+        log_warning "Branch protection setup requires admin access"
+        log_info "Manual setup required - see configuration steps below"
+    fi
 }
 
 create_funding_file() {
     log_info "Checking for FUNDING.yml file..."
-    
+
     # Check if FUNDING.yml already exists
     if gh api repos/"$REPO"/contents/.github/FUNDING.yml &>/dev/null; then
         log_warning "FUNDING.yml already exists, skipping creation"
@@ -150,7 +201,7 @@ EOF
 
 verify_community_health() {
     log_info "Verifying community health files..."
-    
+
     local files=(
         "README.md"
         "LICENSE"
@@ -161,7 +212,7 @@ verify_community_health() {
         ".github/ISSUE_TEMPLATE/"
         ".github/pull_request_template.md"
     )
-    
+
     for file in "${files[@]}"; do
         if gh api repos/"$REPO"/contents/"$file" &>/dev/null; then
             log_success "✓ $file exists"
@@ -178,27 +229,40 @@ display_manual_steps() {
 🌐 MANUAL CONFIGURATION NEEDED:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. 📸 Social Preview Image:
+1. 🛡️ Branch Protection (if automatic setup failed):
+   - Go to: Settings → Branches → Add rule for 'main'
+   - Enable: "Require status checks to pass before merging"
+   - Select required status checks:
+     ✅ PR Validation / ci (ubuntu-latest)
+     ✅ PR Validation / ci (windows-latest)
+     ✅ PR Validation / ci (macos-latest)
+     ✅ PR Validation / container
+     ✅ PR Validation / security-scan
+   - Enable: "Require branches to be up to date before merging"
+   - Enable: "Require conversation resolution before merging"
+   - Enable: "Include administrators"
+
+2. 📸 Social Preview Image:
    - Go to: Settings → General → Social preview
    - Upload a 1280x640 image representing your project
 
-2. 🏠 Homepage URL:
+3. 🏠 Homepage URL:
    - Go to: Settings → General → Website
    - Add your project documentation or website URL
 
-3. 🔒 Advanced Security Settings:
+4. 🔒 Advanced Security Settings:
    - Go to: Settings → Security & analysis
    - Enable Dependabot alerts, security updates, and code scanning
 
-4. 📄 GitHub Pages (if needed):
+5. 📄 GitHub Pages (if needed):
    - Go to: Settings → Pages
    - Configure source branch and folder
 
-5. 💰 Sponsorship (if desired):
+6. 💰 Sponsorship (if desired):
    - Create .github/FUNDING.yml file with your sponsorship links
    - Enable sponsorship in Settings → General → Features
 
-6. 🎯 Repository visibility:
+7. 🎯 Repository visibility:
    - Ensure repository is public for open source discoverability
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -211,19 +275,30 @@ show_final_summary() {
     log_info "Your repository now has:"
     echo "  ✅ Optimized repository settings"
     echo "  ✅ Comprehensive label system"
+    echo "  ✅ Branch protection with workflow status checks"
+    echo "  ✅ PR validation workflow requirements"
     echo "  ✅ Community health files"
     echo "  ✅ Issue and PR templates"
     echo "  ✅ Discussions enabled"
     echo "  ✅ Template repository status"
     echo "  ✅ Proper topics for discoverability"
     echo
+    log_info "Workflow Protection:"
+    echo "  🔒 PRs must pass all validation checks before merge"
+    echo "  🧪 CI testing across Ubuntu, Windows, and macOS"
+    echo "  🐳 Container build and testing validation"
+    echo "  🛡️  Security scanning with Trivy"
+    echo "  🔄 Sequential job dependencies ensure reliability"
+    echo
     log_info "Next steps:"
     echo "  1. Complete manual configuration steps above"
     echo "  2. Review and customize labels as needed"
     echo "  3. Test the template by creating a new repository from it"
-    echo "  4. Share your template with the community!"
+    echo "  4. Create a test PR to verify workflow protection"
+    echo "  5. Share your template with the community!"
     echo
     log_info "Repository URL: https://github.com/$REPO"
+    log_info "Workflow Documentation: docs/workflow-architecture.md"
 }
 
 # Main execution
@@ -231,32 +306,32 @@ main() {
     echo "🚀 GitHub Repository Configuration Script"
     echo "=========================================="
     echo
-    
+
     log_info "Configuring repository: $REPO"
     echo
-    
+
     # Check prerequisites
     check_gh_cli
-    
+
     # Execute configuration steps
     configure_repository_settings
     echo
-    
+
     create_helpful_labels
     echo
-    
+
     configure_branch_protection
     echo
-    
+
     create_funding_file
     echo
-    
+
     verify_community_health
     echo
-    
+
     display_manual_steps
     echo
-    
+
     show_final_summary
 }
 

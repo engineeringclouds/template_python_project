@@ -1,7 +1,9 @@
 # template_python_project
 
 [![CI](https://github.com/engineeringclouds/template_python_project/actions/workflows/ci.yml/badge.svg)](https://github.com/engineeringclouds/template_python_project/actions/workflows/ci.yml)
+[![PR Validation](https://github.com/engineeringclouds/template_python_project/actions/workflows/pr-validation.yml/badge.svg)](https://github.com/engineeringclouds/template_python_project/actions/workflows/pr-validation.yml)
 [![Container Build](https://github.com/engineeringclouds/template_python_project/actions/workflows/container.yml/badge.svg)](https://github.com/engineeringclouds/template_python_project/actions/workflows/container.yml)
+[![Release](https://github.com/engineeringclouds/template_python_project/actions/workflows/release.yml/badge.svg)](https://github.com/engineeringclouds/template_python_project/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
 [![pre-commit enabled](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
@@ -19,6 +21,7 @@ This template was collaboratively developed through "vibe coding" - an iterative
 -   Python 3.13+ compatible
 -   Minimal Hello World application
 -   Containerization with Docker
+-   **Comprehensive code quality standards** - PEP8 and PEP440 compliance with automated enforcement
 -   Pre-commit hooks and code style enforcement (Black, Ruff, Mypy)
 -   Bootstrap scripts for easy setup (Linux/macOS and Windows)
 -   Security best practices (see below)
@@ -32,6 +35,8 @@ This template was collaboratively developed through "vibe coding" - an iterative
 -   Container runs as non-root by default (see Dockerfile for customization)
 -   Dependencies managed via `pyproject.toml` for reproducibility
 -   Pre-commit hooks help catch common mistakes before code is committed
+-   Automated SBOM (Software Bill of Materials) generation for supply chain security
+-   Vulnerability scanning with Trivy in CI/CD pipeline
 
 ## Getting Started
 
@@ -351,6 +356,7 @@ For detailed information, see:
 
 -   [GitHub Configuration Guide](docs/github-configuration.md)
 -   [GitHub CLI Reference](docs/github-cli-reference.md)
+-   [Supply Chain Security & SBOM Guide](docs/supply-chain-security.md)
 
 ## Troubleshooting
 
@@ -444,7 +450,9 @@ For production use, remember to:
 
 ## CI/CD Pipeline
 
-This project uses GitHub Actions with a robust CI/CD pipeline:
+This project uses GitHub Actions with a robust, optimized CI/CD pipeline designed for reliability and maintainability.
+
+> 📖 **Detailed Architecture**: See [Workflow Architecture Documentation](docs/workflow-architecture.md) for comprehensive implementation details.
 
 ### Workflow Dependencies
 
@@ -453,40 +461,59 @@ This project uses GitHub Actions with a robust CI/CD pipeline:
 
 ```mermaid
 graph TD
-    A[Push/PR] --> B[CI Workflow]
-    B --> C[Lint + Format + Type Check + Test]
-    C --> D[Container Workflow]
-    D --> E[Build + Test + Security Scan]
+    A[Pull Request] --> B[PR Validation Workflow]
+    B --> C[CI Matrix Jobs]
+    C --> D[Container Build & Test]
+    D --> E[Security Scan]
+    E --> F[PR Ready for Merge]
 
-    F[Push to main] --> G[Release Workflow]
-    G --> H[Semantic Versioning + Template Validation]
+    G[Push to main] --> H[CI Workflow]
+    H --> I[Container Publishing]
+    G --> J[Release Workflow]
+
+    style B fill:#e1f5fe
+    style H fill:#f3e5f5
+    style I fill:#fff3e0
+    style J fill:#e8f5e8
 ```
 
 </details>
 
-**On every push/pull request:**
+**Pull Request Validation:**
 
-1. **CI Workflow** (`ci.yml`) - Quality checks across platforms
+1. **PR Validation Workflow** (`pr-validation.yml`) - Comprehensive validation using `needs` keyword
 
-    - Linting with Ruff
-    - Code formatting check with Black
-    - Type checking with MyPy
-    - Testing with pytest
-    - Cross-platform testing (Ubuntu, Windows, macOS)
+    - **CI Matrix**: Cross-platform testing (Ubuntu, Windows, macOS)
+        - Linting with Ruff
+        - Code formatting check with Black
+        - Type checking with MyPy
+        - Testing with pytest
+    - **Container Job**: Docker build and testing (depends on CI success)
+    - **Security Scan**: Trivy vulnerability scanning (depends on container success)
 
-2. **Container Workflow** (`container.yml`) - Only after CI passes
-    - **Dependency**: Waits for CI workflow to complete successfully
-    - Docker image building and testing
-    - Container security scanning with Trivy
-    - SARIF upload for security findings
+**Main Branch Automation:**
 
-**On main branch pushes:** 3. **Release Workflow** (`release.yml`) - Automated semantic versioning
+2. **CI Workflow** (`ci.yml`) - Post-merge validation
 
--   **Dependency**: Runs on pushes to main branch
--   Analyzes conventional commits for version bumps
--   Generates changelogs and creates GitHub releases
--   Validates template functionality by building packages
--   Supports manual releases with custom options
+    - Runs comprehensive testing after merge to main
+
+3. **Container Publishing** (`container.yml`) - Production image builds
+
+    - **Dependency**: Triggered by successful CI workflow completion
+    - Builds and publishes container images to registry
+
+4. **Release Workflow** (`release.yml`) - Automated semantic versioning
+    - **Trigger**: Pushes to main branch or manual dispatch
+    - Analyzes conventional commits for version bumps
+    - Generates changelogs and creates GitHub releases
+    - Validates template functionality
+
+### Key Benefits
+
+-   **Reliable Dependencies**: Uses GitHub's native `needs` keyword instead of complex cross-workflow polling
+-   **Fast Feedback**: Parallel job execution with proper dependency ordering
+-   **Branch Protection**: Required status checks prevent merge until all validations pass
+-   **Clear Separation**: Distinct workflows for PR validation vs. production automation
 
 This ensures that only validated, tested code gets containerized and released, following the fail-fast principle and optimizing resource usage.
 
@@ -504,6 +531,7 @@ See [Release Workflow Guide](docs/release-workflow.md) for detailed information.
 
 ## Documentation
 
+-   See [Code Quality Standards Guide](docs/code-quality-standards.md) for PEP8/PEP440 compliance and automation
 -   See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 -   See [Release Workflow Guide](docs/release-workflow.md) for automated release information
 -   See [Usage Examples](docs/examples.md) for detailed implementation examples
