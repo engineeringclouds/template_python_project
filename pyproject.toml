@@ -171,7 +171,6 @@ prerelease = false
 
 [tool.semantic_release.changelog]
 template_dir = "templates"
-changelog_file = "CHANGELOG.md"
 exclude_commit_patterns = [
     "^chore",
     "^ci",
@@ -182,12 +181,15 @@ exclude_commit_patterns = [
     "Merge pull request .*"
 ]
 
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+
 [tool.semantic_release.commit_author]
 env = "GIT_COMMIT_AUTHOR"
 default = "semantic-release <semantic-release>"
 
-[tool.semantic_release.commit_message]
-# Use Angular commit message format
+# Commit message format for releases
+# Use Angular commit message format.
 # feat: A new feature
 # fix: A bug fix
 # docs: Documentation only changes
@@ -196,7 +198,7 @@ default = "semantic-release <semantic-release>"
 # perf: A code change that improves performance
 # test: Adding missing tests or correcting existing tests
 # chore: Changes to the build process or auxiliary tools
-default = "chore(release): {version}\n\n{changelog}"
+commit_message = "chore(release): {version}\n\n{changelog}"
 
 [tool.semantic_release.commit_parser_options]
 allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
