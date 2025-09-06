@@ -131,6 +131,21 @@ jobs:
           python -m pip install --upgrade twine
           twine check dist/*
 
+      - name: Security | Generate SBOM
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        uses: anchore/sbom-action@v0
+        with:
+          path: ./
+          format: spdx-json
+          output-file: "sbom.spdx.json"
+
+      - name: Security | Generate SBOM (CycloneDX format)
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements -o sbom.cyclonedx.json --format json
+          cyclonedx-py requirements -o sbom.cyclonedx.xml --format xml
+
       - name: Upload | Build Artifacts
         if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
         uses: actions/upload-artifact@v4
@@ -139,12 +154,34 @@ jobs:
           path: dist/
           retention-days: 7 # Shorter retention for template verification
 
+      - name: Upload | SBOM Artifacts
+        if: steps.release.outputs.released == 'true' || github.event.inputs.dry_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-artifacts
+          path: |
+            sbom.spdx.json
+            sbom.cyclonedx.json
+            sbom.cyclonedx.xml
+          retention-days: 90 # Longer retention for security tracking
+
       - name: Publish | Upload to GitHub Release Assets
         if: steps.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
         uses: python-semantic-release/publish-action@v10.3.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.release.outputs.tag }}
+
+      - name: Publish | Attach SBOM to Release
+        if: steps.release.outputs.released == 'true' && github.event.inputs.dry_run != 'true'
+        run: |
+          gh release upload ${{ steps.release.outputs.tag }} \
+            sbom.spdx.json \
+            sbom.cyclonedx.json \
+            sbom.cyclonedx.xml \
+            --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify | Release Summary
         if: always()

@@ -21,6 +21,7 @@ This template was collaboratively developed through "vibe coding" - an iterative
 -   Python 3.13+ compatible
 -   Minimal Hello World application
 -   Containerization with Docker
+-   **Comprehensive code quality standards** - PEP8 and PEP440 compliance with automated enforcement
 -   Pre-commit hooks and code style enforcement (Black, Ruff, Mypy)
 -   Bootstrap scripts for easy setup (Linux/macOS and Windows)
 -   Security best practices (see below)
@@ -34,6 +35,8 @@ This template was collaboratively developed through "vibe coding" - an iterative
 -   Container runs as non-root by default (see Dockerfile for customization)
 -   Dependencies managed via `pyproject.toml` for reproducibility
 -   Pre-commit hooks help catch common mistakes before code is committed
+-   Automated SBOM (Software Bill of Materials) generation for supply chain security
+-   Vulnerability scanning with Trivy in CI/CD pipeline
 
 ## Getting Started
 
@@ -353,6 +356,7 @@ For detailed information, see:
 
 -   [GitHub Configuration Guide](docs/github-configuration.md)
 -   [GitHub CLI Reference](docs/github-cli-reference.md)
+-   [Supply Chain Security & SBOM Guide](docs/supply-chain-security.md)
 
 ## Troubleshooting
 
@@ -527,6 +531,7 @@ See [Release Workflow Guide](docs/release-workflow.md) for detailed information.
 
 ## Documentation
 
+-   See [Code Quality Standards Guide](docs/code-quality-standards.md) for PEP8/PEP440 compliance and automation
 -   See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 -   See [Release Workflow Guide](docs/release-workflow.md) for automated release information
 -   See [Usage Examples](docs/examples.md) for detailed implementation examples
