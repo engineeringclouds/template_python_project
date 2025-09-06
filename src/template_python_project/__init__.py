@@ -17,5 +17,5 @@ https://github.com/engineeringclouds/template_python_project/generate
 
 from .main import hello
 
-__version__ = "0.1.0"
+__version__ = "1.0.1"
 __all__ = ["hello"]
