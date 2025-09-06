@@ -159,24 +159,57 @@ configure_branch_protection() {
         echo "  - $check"
     done
 
+    # Create the JSON payload for branch protection
+    local protection_payload=$(jq -n \
+        --argjson contexts "$contexts_json" \
+        '{
+            required_status_checks: {
+                strict: true,
+                contexts: $contexts
+            },
+            enforce_admins: true,
+            required_pull_request_reviews: {
+                required_approving_review_count: 1,
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: false,
+                require_last_push_approval: false
+            },
+            restrictions: null,
+            allow_force_pushes: false,
+            allow_deletions: false,
+            block_creations: false,
+            required_conversation_resolution: true
+        }')
+
     # Enable branch protection for main branch
     # Note: This requires push access to the repository
-    if gh api repos/"$REPO"/branches/main/protection \
+    local api_response
+    api_response=$(echo "$protection_payload" | gh api repos/"$REPO"/branches/main/protection \
         --method PUT \
-        --field required_status_checks="{\"strict\":true,\"contexts\":$contexts_json}" \
-        --field enforce_admins=true \
-        --field required_pull_request_reviews='{"required_approving_review_count":1,"dismiss_stale_reviews":true,"require_code_owner_reviews":false,"require_last_push_approval":false}' \
-        --field restrictions=null \
-        --field allow_force_pushes=false \
-        --field allow_deletions=false \
-        --field block_creations=false \
-        --field required_conversation_resolution=true \
-        2>/dev/null; then
-
+        --input - \
+        2>&1)
+    local api_status=$?
+    if [ $api_status -eq 0 ]; then
         log_success "Branch protection configured with required status checks"
         log_info "All PR validation workflow jobs must pass before merge"
     else
-        log_warning "Branch protection setup requires admin access"
+        log_warning "Branch protection setup failed"
+        log_info "This usually requires admin access or the branch may not exist yet"
+        
+        # Show specific error if it's a permissions issue
+        if echo "$api_response" | grep -q "403\|Forbidden"; then
+            log_warning "Insufficient permissions - you need admin access to the repository"
+        elif echo "$api_response" | grep -q "404\|Not Found"; then
+            log_warning "Branch 'main' not found - create the branch first"
+        elif echo "$api_response" | grep -q "422\|Invalid request"; then
+            log_warning "Invalid request format - this may be a GitHub API schema issue"
+            if [ -n "$DEBUG" ]; then
+                echo "Debug info: $api_response" >&2
+            else
+                log_info "Run with DEBUG=1 to see detailed API response."
+            fi
+        fi
+        
         log_info "Manual setup required - see configuration steps below"
     fi
 }
