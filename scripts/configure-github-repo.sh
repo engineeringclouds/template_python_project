@@ -152,7 +152,7 @@ configure_branch_protection() {
     )
 
     # Convert array to JSON format
-    local contexts_json=$(printf '%s\n' "${required_checks[@]}" | jq -R . | jq -s .)
+    local contexts_json=$(printf '%s\n' "${required_checks[@]}" | jq -Rs 'split("\n")[:-1]')
 
     log_info "Setting up branch protection with status checks:"
     for check in "${required_checks[@]}"; do
