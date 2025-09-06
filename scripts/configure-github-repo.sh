@@ -19,7 +19,7 @@ set -e  # Exit on any error
 #    - Enable: "Require conversation resolution before merging"
 #    - Enable: "Include administrators"
 # 2. 📸 Social Preview Image
-DEFAULT_REPO="ds/template_python_project"
+DEFAULT_REPO="engineeringclouds/template_python_project"
 REPO="${1:-$DEFAULT_REPO}"
 
 # Colors for output
