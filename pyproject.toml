@@ -189,7 +189,7 @@ env = "GIT_COMMIT_AUTHOR"
 default = "semantic-release <semantic-release>"
 
 # Commit message format for releases
-# Use Angular commit message format:
+# Use Angular commit message format.
 # feat: A new feature
 # fix: A bug fix
 # docs: Documentation only changes
