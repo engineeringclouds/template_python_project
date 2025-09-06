@@ -188,8 +188,8 @@ configure_branch_protection() {
         --method PUT \
         --input - \
         2>&1)
-    
-    if [ $? -eq 0 ]; then
+    local api_status=$?
+    if [ $api_status -eq 0 ]; then
         log_success "Branch protection configured with required status checks"
         log_info "All PR validation workflow jobs must pass before merge"
     else
