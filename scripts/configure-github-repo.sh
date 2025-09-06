@@ -203,7 +203,11 @@ configure_branch_protection() {
             log_warning "Branch 'main' not found - create the branch first"
         elif echo "$api_response" | grep -q "422\|Invalid request"; then
             log_warning "Invalid request format - this may be a GitHub API schema issue"
-            echo "Debug info: $api_response" >&2
+            if [ -n "$DEBUG" ]; then
+                echo "Debug info: $api_response" >&2
+            else
+                log_info "Run with DEBUG=1 to see detailed API response."
+            fi
         fi
         
         log_info "Manual setup required - see configuration steps below"
