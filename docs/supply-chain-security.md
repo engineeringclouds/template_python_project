@@ -164,8 +164,8 @@ The SBOM generation is integrated into the release workflow:
 - name: Security | Generate SBOM (CycloneDX format)
   run: |
       pip install cyclonedx-bom
-      cyclonedx-py requirements -o sbom.cyclonedx.json --format json
-      cyclonedx-py requirements -o sbom.cyclonedx.xml --format xml
+      cyclonedx-py environment -o sbom.cyclonedx.json --output-format JSON --pyproject pyproject.toml
+      cyclonedx-py environment -o sbom.cyclonedx.xml --output-format XML --pyproject pyproject.toml
 ```
 
 ### Dependency Management
