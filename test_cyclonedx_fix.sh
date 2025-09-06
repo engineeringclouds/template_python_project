@@ -53,7 +53,7 @@ fi
 
 # Check if any old --format arguments remain
 echo "6. Checking for any remaining --format arguments..."
-if grep -r "cyclonedx-py.*--format[^-]" . --exclude-dir=.git; then
+if grep -r "cyclonedx-py.*--format($|[[:space:]])" . --exclude-dir=.git; then
     echo "❌ Found remaining --format arguments that should be --output-format"
     exit 1
 else
